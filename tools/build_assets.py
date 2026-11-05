@@ -4,7 +4,19 @@ from fontTools import subset
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "assets")
-GREEN, BONE, ASH, DIM, FAINT, NIGHT = "#4ef185", "#e9e7e2", "#c3c1bc", "#5d5c58", "#232322", "#050505"
+THEMES = {
+    "dark": dict(SUFFIX="", GREEN="#4ef185", BONE="#e9e7e2", ASH="#c3c1bc", DIM="#5d5c58", FAINT="#232322", NIGHT="#050505",
+                 MID="#8d8b86", ZERO="#3a3a38", EDGE="#2a2a29", WATER="#2c2c2b", MUTE_EDGE="#4a4a48", MUTE="#93918b"),
+    "light": dict(SUFFIX="-light", GREEN="#11843f", BONE="#121212", ASH="#3d3d3b", DIM="#8a8984", FAINT="#dcdbd5", NIGHT="#f4f3ef",
+                  MID="#6b6a66", ZERO="#c9c8c2", EDGE="#d6d5cf", WATER="#e2e1db", MUTE_EDGE="#b5b4ae", MUTE="#6b6a66"),
+}
+
+
+def use(theme):
+    globals().update(THEMES[theme])
+
+
+use("dark")
 FILES = {"mono": "IBMPlexMono-Regular.ttf", "sans": "IBMPlexSans-Regular.ttf", "mincho": "ShipporiMincho-Medium.ttf"}
 FAMILY = {"mono": "M", "sans": "S", "mincho": "K"}
 _fonts = {}
@@ -66,7 +78,7 @@ def esc(text):
 
 
 def write(name, parts):
-    with open(os.path.join(ASSETS, name), "w") as fh:
+    with open(os.path.join(ASSETS, name.replace(".svg", SUFFIX + ".svg")), "w") as fh:
         fh.write("".join(parts))
 
 
@@ -107,11 +119,11 @@ def header():
         t.append('<text class="m" x="44" y="%d" font-size="13" fill="%s">%08X</text>' % (y, DIM, 0x401000 + r * 16))
         for c, b in enumerate(row):
             i = r * 16 + c
-            col = GREEN if i < name_len else ("#8d8b86" if b else "#3a3a38")
+            col = GREEN if i < name_len else (MID if b else ZERO)
             t.append('<text class="m" x="%d" y="%d" font-size="13" fill="%s">%02X</text>' % (130 + c * 23, y, col, b))
         t.append('<text class="m" x="508" y="%d" font-size="13" fill="%s" xml:space="preserve">%s</text>' % (y, BONE if r == 0 else ASH, esc(ascii_rows[r])))
     t.append('<rect x="125" y="66" width="%d" height="20" fill="none" stroke="%s"/>' % (name_len * 23 + 2, GREEN))
-    colors = {"k": "#8d8b86", "f": BONE, "i": GREEN, "p": ASH}
+    colors = {"k": MID, "f": BONE, "i": GREEN, "p": ASH}
     for li, line in enumerate(code):
         y = 94 + li * 30
         spans = "".join('<tspan fill="%s">%s</tspan>' % (colors[k], esc(s)) for k, s in line)
@@ -146,18 +158,18 @@ def card(index, slug, title, lede, status, meta):
     mono_text = head + symbol + "():" + status + meta + "".join(hexrows) + "0123456789ABCDEF;"
     t = ['<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" role="img" aria-label="%s. %s">' % (W, H, W, H, esc(title), esc(lede)),
          "<style>" + faces({"mono": mono_text, "sans": lede, "mincho": title}) + "</style>"]
-    t.append('<rect x=".5" y=".5" width="%d" height="%d" fill="%s" stroke="%s"/>' % (W - 1, H - 1, NIGHT, "#2a2a29"))
+    t.append('<rect x=".5" y=".5" width="%d" height="%d" fill="%s" stroke="%s"/>' % (W - 1, H - 1, NIGHT, EDGE))
     t.append('<text class="m" x="28" y="36" font-size="11.5" fill="%s">%s</text>' % (DIM, esc(head)))
-    t.append('<text class="m" x="612" y="36" font-size="11.5" text-anchor="end" fill="%s">%s():</text>' % ("#3a3a38", esc(symbol)))
+    t.append('<text class="m" x="612" y="36" font-size="11.5" text-anchor="end" fill="%s">%s():</text>' % (ZERO, esc(symbol)))
     t.append('<text class="k" x="27" y="80" font-size="30" fill="%s">%s</text>' % (BONE, esc(title)))
     t.append('<path d="M28 96h48" stroke="%s"/>' % GREEN)
     for i, l in enumerate(lines):
         t.append('<text class="s" x="28" y="%d" font-size="15.5" fill="%s">%s</text>' % (126 + i * 23, ASH, esc(l)))
     for i, row in enumerate(hexrows):
-        t.append('<text class="m" x="612" y="%d" font-size="11" text-anchor="end" fill="%s">%s</text>' % (78 + i * 19, "#2c2c2b", row))
+        t.append('<text class="m" x="612" y="%d" font-size="11" text-anchor="end" fill="%s">%s</text>' % (78 + i * 19, WATER, row))
     sw = width("mono", status, 11) + 18
-    t.append('<rect x="28" y="196" width="%.1f" height="20" fill="none" stroke="%s"/>' % (sw, GREEN if green else "#4a4a48"))
-    t.append('<text class="m" x="37" y="210" font-size="11" fill="%s">%s</text>' % (GREEN if green else "#93918b", esc(status)))
+    t.append('<rect x="28" y="196" width="%.1f" height="20" fill="none" stroke="%s"/>' % (sw, GREEN if green else MUTE_EDGE))
+    t.append('<text class="m" x="37" y="210" font-size="11" fill="%s">%s</text>' % (GREEN if green else MUTE, esc(status)))
     t.append('<text class="m" x="%.1f" y="210" font-size="11" fill="%s">; %s</text>' % (28 + sw + 14, DIM, esc(meta)))
     t.append("</svg>")
     write("card-%s.svg" % slug, t)
@@ -186,9 +198,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--fonts", required=True)
     FONT_DIR = parser.parse_args().fonts
-    header()
-    for i, c in enumerate(CARDS):
-        card(i, *c)
-    divider("work", ".text:00401A00", "selected work")
-    divider("record", ".rdata:00403000", "record")
+    for theme in THEMES:
+        use(theme)
+        header()
+        for i, c in enumerate(CARDS):
+            card(i, *c)
+        divider("work", ".text:00401A00", "selected work")
+        divider("record", ".rdata:00403000", "record")
     action_font()
