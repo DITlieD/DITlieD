@@ -136,12 +136,45 @@ def header():
     write("header.svg", t)
 
 
+def about():
+    W = 1280
+    intro = ("I develop through AI, and I build the engineering that makes that fast and reliable: bounded tasks, durable state, "
+             "independent checks and recovery. Game development at TapOrbit Studios (Everlasting Odyssey, Zombie Citizen), "
+             "Skyrim's combat AI rebuilt from the shipped binary, generators for trees, villages, textures, effects and audio.")
+    title = ".text:00401800  ; about"
+    cta = "click here for my portfolio"
+    target = "jmp doyoutrustlia.com/raian"
+    lines = wrap("sans", intro, 19, 1150)
+    top = 96
+    box_y = top + len(lines) * 32 + 18
+    H = box_y + 76
+    mono_text = title + cta + target + "→0123456789ABCDEF:"
+    css = faces({"mono": mono_text, "sans": intro}) + (
+        "@keyframes pulse{0%%,100%%{stroke-opacity:1}50%%{stroke-opacity:.35}}.btn{animation:pulse 2.4s ease-in-out infinite}"
+        "@keyframes nudge{0%%,100%%{transform:translateX(0)}50%%{transform:translateX(6px)}}.arr{animation:nudge 1.6s ease-in-out infinite}")
+    t = ['<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" role="img" aria-label="%s Click here for my portfolio at doyoutrustlia.com/raian.">' % (W, H, W, H, esc(intro)),
+         "<style>" + css + "</style>", '<rect width="100%%" height="100%%" fill="%s"/>' % NIGHT]
+    t.append('<text class="m" x="40" y="40" font-size="12" xml:space="preserve"><tspan fill="%s">.text:00401800</tspan><tspan fill="%s">  ; about</tspan></text>' % (DIM, BONE))
+    t.append('<path d="M40 54H1240" stroke="%s"/>' % FAINT)
+    for i, l in enumerate(lines):
+        y = top + i * 32
+        t.append('<text class="m" x="40" y="%d" font-size="12" fill="%s">%06X</text>' % (y - 2, DIM, 0x401800 + i * 0x20))
+        t.append('<text class="s" x="112" y="%d" font-size="19" fill="%s">%s</text>' % (y, ASH, esc(l)))
+    bw = width("mono", cta, 15) + 70
+    t.append('<rect class="btn" x="112" y="%d" width="%.0f" height="44" fill="%s" fill-opacity=".07" stroke="%s"/>' % (box_y, bw, GREEN, GREEN))
+    t.append('<text class="m" x="132" y="%d" font-size="15" fill="%s">%s</text>' % (box_y + 28, GREEN, esc(cta)))
+    t.append('<text class="m arr" x="%.0f" y="%d" font-size="15" fill="%s">→</text>' % (112 + bw - 34, box_y + 28, GREEN))
+    t.append('<text class="m" x="%.0f" y="%d" font-size="13" fill="%s">; %s</text>' % (112 + bw + 24, box_y + 27, DIM, esc(target)))
+    t.append("</svg>")
+    write("about.svg", t)
+
+
 CARDS = [
     ("polyspoon", "Polyspoon", "An open-source 3D asset community. Small TypeScript recipes become editable low-poly models for Unity and Godot, every model reviewed by a person.", "Public", "JavaScript"),
     ("stillwrong", "StillWrong", "Unity Editor package. See a bug while you play, click it and say what is wrong. An agent fixes a copy of the scene on its own git branch.", "Public", "C# · Meta hackathon"),
     ("neuron-soul", "neuron-soul", "Contrastive neuron extraction and steering. Which MLP neurons hold one character archetype inside Qwen models, and what pushing them does.", "Public", "Python · 4B and 27B"),
-    ("lia-trust", "LIA trust kernel", "Fail-closed gates and Ed25519-signed receipts for coding-agent actions. Anyone can verify the journal offline.", "v0.3.0", "Rust · Python"),
     ("elai", "ELAI", "Local-first, model-agnostic agent-harness research and its Zenodo preprint. Restart planned; old claims await revalidation.", "Archive", "Rust"),
+    ("lia-trust", "LIA trust kernel", "Fail-closed gates and Ed25519-signed receipts for coding-agent actions. Anyone can verify the journal offline.", "v0.3.0", "Rust · Python"),
     ("understudy", "Understudy", "Show a support procedure once in the page, and the page registers it as a callable WebMCP tool.", "Public", "TypeScript"),
 ]
 
@@ -201,8 +234,8 @@ if __name__ == "__main__":
     for theme in THEMES:
         use(theme)
         header()
+        about()
         for i, c in enumerate(CARDS):
             card(i, *c)
         divider("work", ".text:00401A00", "selected work")
-        divider("record", ".rdata:00403000", "record")
     action_font()
